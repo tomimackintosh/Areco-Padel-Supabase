@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0b0b0c">
+  <title>Areco Padel</title>
+  <style>
+  :root {
+    --accent: #CCFF00;
+    --accent-dim: rgba(204, 255, 0, 0.14);
+    --bg: #0b0b0c;
+    --bg-elevated: #141416;
+    --panel: rgba(255, 255, 255, 0.045);
+    --panel-border: rgba(255, 255, 255, 0.09);
+    --text: #f2f2f2;
+    --text-muted: #9a9a9e;
+    --ok: #35d07f;
+    --busy: #ff5c5c;
+    --warn: #ffb84d;
+    --radius: 18px;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: radial-gradient(circle at 20% 0%, #16181a 0%, #0b0b0c 55%);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app-shell { max-width: 640px; margin: 0 auto; padding: 0 16px 40px; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 22px 4px 18px;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+  .brand-name { font-weight: 700; font-size: 17px; letter-spacing: 0.2px; }
+
+  .tabs { display: flex; gap: 6px; background: var(--panel); padding: 4px; border-radius: 100px; border: 1px solid var(--panel-border); }
+  .tab-btn {
+    border: none; background: transparent; color: var(--text-muted);
+    padding: 8px 16px; border-radius: 100px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: all .2s ease;
+  }
+  .tab-btn.active { background: var(--accent); color: #10120a; }
+
+  .view { display: none; animation: fadeIn .25s ease; }
+  .view.active { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+  }
+
+  .card h2 { margin: 0 0 6px; font-size: 20px; }
+  .muted { color: var(--text-muted); font-size: 13.5px; margin: 0 0 18px; }
+
+  .steps-indicator { display: flex; align-items: center; justify-content: center; margin: 6px 0 22px; }
+  .step-dot {
+    width: 30px; height: 30px; border-radius: 50%; background: var(--bg-elevated);
+    border: 1px solid var(--panel-border); color: var(--text-muted);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;
+    position: relative;
+  }
+  .step-dot span { position: absolute; top: 36px; font-size: 11px; font-weight: 500; white-space: nowrap; color: var(--text-muted); }
+  .step-dot.active { background: var(--accent); color: #10120a; border-color: var(--accent); }
+  .step-line { width: 44px; height: 1px; background: var(--panel-border); margin: 0 6px; }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  .input-date {
+    width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid var(--panel-border);
+    background: var(--bg-elevated); color: var(--text); font-size: 15px; margin-bottom: 18px;
+  }
+  .input-date:focus { outline: none; border-color: var(--accent); }
+
+  .btn-primary {
+    background: var(--accent); color: #10120a; border: none; padding: 13px 22px;
+    border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .btn-primary:hover { box-shadow: 0 0 20px var(--accent-dim); transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+  .btn-block { width: 100%; }
+
+  .btn-secondary {
+    background: transparent; color: var(--text); border: 1px solid var(--panel-border);
+    padding: 13px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer;
+  }
+
+  .btn-back {
+    background: var(--bg-elevated); border: 1px solid var(--panel-border); color: var(--text);
+    width: 34px; height: 34px; border-radius: 10px; cursor: pointer; font-size: 16px; margin-right: 12px;
+  }
+  .panel-header { display: flex; align-items: center; margin-bottom: 16px; }
+  .panel-header h2 { margin: 0; }
+  .panel-header .muted { margin: 2px 0 0; }
+
+  .legend { display: flex; gap: 16px; margin-bottom: 14px; }
+  .legend-item { font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+  .dot-disponible { background: var(--ok); }
+  .dot-ocupado { background: var(--busy); }
+
+  .grilla-turnos { display: flex; flex-direction: column; gap: 10px; max-height: 460px; overflow-y: auto; padding-right: 4px; }
+  .horario-grupo { border: 1px solid var(--panel-border); border-radius: 14px; padding: 12px; background: rgba(255,255,255,0.02); }
+  .horario-hora { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+  .slots-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .slot-btn {
+    flex: 1 1 auto; min-width: 90px; padding: 10px 8px; border-radius: 10px; text-align: center;
+    font-size: 12.5px; font-weight: 600; border: 1px solid var(--panel-border); cursor: pointer;
+    background: rgba(53, 208, 127, 0.08); color: #eafff2; transition: all .15s ease;
+  }
+  .slot-btn:hover { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .slot-btn.ocupado { background: rgba(255,92,92,0.06); color: #756060; cursor: not-allowed; border-color: rgba(255,92,92,0.15); }
+  .slot-btn.ocupado:hover { background: rgba(255,92,92,0.06); border-color: rgba(255,92,92,0.15); color: #756060; }
+
+  .resumen-turno {
+    background: var(--bg-elevated); border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 16px; margin-bottom: 18px;
+  }
+  .resumen-turno .fila { display: flex; justify-content: space-between; padding: 5px 0; font-size: 13.5px; }
+  .resumen-turno .fila span:first-child { color: var(--text-muted); }
+  .resumen-turno .fila span:last-child { font-weight: 700; }
+  .resumen-turno .fila.total span:last-child { color: var(--accent); font-size: 16px; }
+
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+  .form-field input {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--panel-border);
+    background: var(--bg-elevated); color: var(--text); font-size: 14px;
+  }
+  .form-field input:focus { outline: none; border-color: var(--accent); }
+
+  .form-error { color: var(--busy); font-size: 13px; margin-bottom: 12px; min-height: 0; }
+
+  .confirm-icon {
+    width: 56px; height: 56px; border-radius: 50%; background: var(--accent-dim); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 700;
+    margin: 0 auto 16px;
+  }
+  #panel-4 { text-align: center; }
+  #panel-4 h2 { margin-bottom: 4px; }
+
+  .pago-opciones { display: flex; flex-direction: column; gap: 12px; margin-bottom: 8px; }
+  .pago-opcion {
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    background: var(--bg-elevated); border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 16px 18px; cursor: pointer; text-align: left; transition: all .15s ease;
+  }
+  .pago-opcion:hover { border-color: var(--accent); box-shadow: 0 0 16px var(--accent-dim); }
+  .pago-opcion-titulo { font-size: 14px; font-weight: 700; color: var(--text); }
+  .pago-opcion-monto { font-size: 22px; font-weight: 800; color: var(--accent); }
+  .pago-opcion-nota { font-size: 12px; color: var(--text-muted); }
+
+  .pasarela-demo {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1500; padding: 20px;
+  }
+  .pasarela-demo.hidden { display: none; }
+  .pasarela-box {
+    background: #141416; border: 1px solid var(--panel-border); border-radius: 18px; padding: 28px;
+    max-width: 360px; width: 100%; text-align: center;
+  }
+  .pasarela-logo { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  .pasarela-monto { font-size: 30px; font-weight: 800; color: var(--accent); margin: 16px 0; }
+  .pasarela-spinner {
+    width: 32px; height: 32px; border: 3px solid rgba(204,255,0,0.2); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin .8s linear infinite; margin: 0 auto 18px;
+  }
+  .pasarela-acciones { display: flex; flex-direction: column; gap: 10px; }
+
+  .codigo-copiable {
+    display: flex; align-items: center; justify-content: center; gap: 10px; margin: 14px 0 22px;
+    background: var(--bg-elevated); border: 1px solid var(--panel-border); border-radius: 12px; padding: 12px;
+    font-size: 18px; font-weight: 800; letter-spacing: 1px;
+  }
+  .btn-icon-copy { background: none; border: none; cursor: pointer; font-size: 16px; }
+
+  .resultado-consulta { margin-top: 18px; }
+  .estado-badge { display: inline-block; padding: 4px 12px; border-radius: 100px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; }
+  .estado-CONFIRMADA { background: rgba(204,255,0,0.16); color: var(--accent); }
+  .estado-PARCIAL { background: rgba(255,184,77,0.14); color: var(--warn); }
+  .estado-CANCELADA { background: rgba(255,92,92,0.14); color: var(--busy); }
+
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; z-index: 999;
+  }
+  .loading-overlay.hidden { display: none; }
+  .spinner { width: 40px; height: 40px; border: 3px solid rgba(204,255,0,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 480px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .step-dot span { font-size: 10px; }
+  }
+
+  /* =====================================================================
+   * AJUSTES CELULAR / NOTEBOOK
+   * (Base pensada para celular; se ensancha en pantallas grandes.)
+   * ===================================================================== */
+  :root { color-scheme: dark; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  * { -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100vh; min-height: 100dvh; }
+  body { font-size: 16px; line-height: 1.4; }
+  button, input { font-family: inherit; touch-action: manipulation; }
+
+  /* Campos a 16px: si son más chicos, el iPhone hace zoom automático al tocarlos */
+  .input-date, .form-field input { font-size: 16px; min-height: 52px; }
+  .input-date { -webkit-appearance: none; appearance: none; display: block; text-align: left; }
+  .form-field label { font-size: 13px; }
+
+  /* Botones cómodos para el pulgar */
+  .btn-primary, .btn-secondary { min-height: 52px; font-size: 16px; border-radius: 14px; }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-back { width: 44px; height: 44px; font-size: 18px; flex-shrink: 0; }
+
+  .card h2 { font-size: 22px; line-height: 1.2; }
+  .muted { font-size: 14.5px; }
+  .step-panel.active { animation: fadeIn .25s ease; }
+
+  .steps-indicator { margin: 4px 0 42px; }
+  .step-dot { width: 32px; height: 32px; flex-shrink: 0; }
+  .step-dot span { top: 38px; font-size: 12px; }
+  .step-line { flex: 1; max-width: 64px; }
+
+  .legend-item { font-size: 13.5px; }
+  .horario-grupo { padding: 14px; }
+  .horario-hora { font-size: 15px; margin-bottom: 10px; }
+  .grilla-turnos { max-height: none; overflow: visible; padding-right: 0; gap: 12px; }
+  .slots-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+  .slot-btn {
+    min-width: 0; min-height: 52px; padding: 12px 10px; font-size: 15px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slot-btn:active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); }
+  .slot-btn.ocupado { text-decoration: line-through; }
+
+  .resumen-turno .fila { font-size: 15px; padding: 6px 0; }
+  .resumen-turno .fila.total span:last-child { font-size: 18px; }
+
+  .pago-opcion { padding: 18px; }
+  .pago-opcion-titulo { font-size: 16px; }
+  .pago-opcion-monto { font-size: 26px; }
+  .pago-opcion-nota { font-size: 13px; }
+  .pago-opcion:active { border-color: var(--accent); }
+
+  .codigo-copiable { font-size: 20px; }
+  .btn-icon-copy { font-size: 20px; padding: 6px; }
+
+  /* ---------- Celular (hasta 720px) ---------- */
+  @media (max-width: 720px) {
+    .app-shell { padding: 0 14px calc(100px + env(safe-area-inset-bottom)); }
+    .topbar { padding: calc(16px + env(safe-area-inset-top)) 4px 14px; }
+    .brand-name { font-size: 19px; }
+
+    /* Menú abajo, como una app: siempre a mano con el pulgar */
+    .tabs {
+      position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 900; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 6px;
+      border-radius: 20px; background: rgba(20, 20, 22, 0.9);
+      backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    }
+    .tab-btn { min-height: 46px; padding: 12px 8px; font-size: 15px; border-radius: 15px; }
+
+    .card { padding: 20px 16px; border-radius: 20px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .btn-primary.btn-block, .btn-secondary.btn-block { width: 100%; }
+    #btnVerDisponibilidad, #btnConsultarReserva { width: 100%; }
+  }
+
+  /* ---------- Celulares chicos ---------- */
+  @media (max-width: 380px) {
+    .slots-row { grid-template-columns: 1fr 1fr; }
+    .card h2 { font-size: 20px; }
+  }
+
+  /* ---------- Notebook / escritorio (900px o más) ---------- */
+  @media (min-width: 900px) {
+    .app-shell { max-width: 900px; padding: 0 32px 64px; }
+    .topbar { padding: 32px 4px 26px; }
+    .brand-name { font-size: 22px; }
+    .tab-btn { padding: 10px 22px; font-size: 14px; }
+    .card { padding: 36px; }
+    .card h2 { font-size: 26px; }
+
+    #btnVerDisponibilidad { min-width: 260px; }
+    .input-date { max-width: 320px; }
+
+    /* Turnos en 2 columnas para aprovechar el ancho */
+    .grilla-turnos { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+
+    /* Paso 3: resumen a la izquierda, formulario a la derecha */
+    #panel-3.active {
+      display: grid; grid-template-columns: 300px 1fr; column-gap: 32px; align-items: start;
+    }
+    #panel-3 .panel-header { grid-column: 1 / -1; }
+    #panel-3 .resumen-turno { grid-column: 1; grid-row: 2 / span 3; margin-bottom: 0; position: sticky; top: 24px; }
+    #panel-3 .form-grid { grid-column: 2; grid-row: 2; }
+    #panel-3 #formError { grid-column: 2; grid-row: 3; }
+    #panel-3 #btnIrAPago { grid-column: 2; grid-row: 4; }
+
+    /* Paso 4: seña y total lado a lado */
+    .pago-opciones { flex-direction: row; }
+    .pago-opcion { flex: 1; }
+
+    .btn-primary:hover { box-shadow: 0 0 20px var(--accent-dim); transform: translateY(-1px); }
+  }
+</style>
+
+</head>
+<body>
+  <div class="app-shell">
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <span class="brand-name">Areco Padel</span>
+      </div>
+      <nav class="tabs" id="mainTabs">
+        <button class="tab-btn active" data-tab="reservar">Reservar</button>
+        <button class="tab-btn" data-tab="miReserva">Mi reserva</button>
+      </nav>
+    </header>
+
+    <main class="content">
+
+      <!-- ================= VISTA: RESERVAR ================= -->
+      <section id="view-reservar" class="view active">
+
+        <div class="steps-indicator">
+          <div class="step-dot active" data-step="1">1<span>Fecha</span></div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="2">2<span>Turno</span></div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="3">3<span>Datos</span></div>
+          <div class="step-line"></div>
+          <div class="step-dot" data-step="4">4<span>Pago</span></div>
+        </div>
+
+        <!-- Paso 1: Fecha -->
+        <div class="card step-panel active" id="panel-1">
+          <h2>¿Qué día querés jugar?</h2>
+          <p class="muted">Elegí una fecha para ver los turnos disponibles.</p>
+          <input type="date" id="inputFecha" class="input-date">
+          <button class="btn-primary" id="btnVerDisponibilidad">Ver disponibilidad</button>
+        </div>
+
+        <!-- Paso 2: Grilla de turnos -->
+        <div class="card step-panel" id="panel-2">
+          <div class="panel-header">
+            <button class="btn-back" data-back="1">&larr;</button>
+            <div>
+              <h2>Elegí tu turno</h2>
+              <p class="muted" id="fechaSeleccionadaLabel"></p>
+            </div>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><i class="dot dot-disponible"></i>Disponible</span>
+            <span class="legend-item"><i class="dot dot-ocupado"></i>Ocupado</span>
+          </div>
+          <div id="grillaTurnos" class="grilla-turnos"></div>
+        </div>
+
+        <!-- Paso 3: Datos personales -->
+        <div class="card step-panel" id="panel-3">
+          <div class="panel-header">
+            <button class="btn-back" data-back="2">&larr;</button>
+            <div>
+              <h2>Confirmá tu reserva</h2>
+              <p class="muted">Completá tus datos para finalizar.</p>
+            </div>
+          </div>
+
+          <div class="resumen-turno" id="resumenTurno"></div>
+
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Nombre</label>
+              <input type="text" id="inputNombre" maxlength="60" autocomplete="given-name" autocapitalize="words">
+            </div>
+            <div class="form-field">
+              <label>Apellido</label>
+              <input type="text" id="inputApellido" maxlength="60" autocomplete="family-name" autocapitalize="words">
+            </div>
+            <div class="form-field">
+              <label>WhatsApp</label>
+              <input type="tel" id="inputWhatsapp" placeholder="11 2345 6789" autocomplete="tel" inputmode="tel">
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" id="inputEmail" placeholder="nombre@email.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off">
+            </div>
+            <div class="form-field full">
+              <label>Observaciones (opcional)</label>
+              <input type="text" id="inputObservaciones" maxlength="140">
+            </div>
+          </div>
+
+          <div id="formError" class="form-error"></div>
+          <button class="btn-primary btn-block" id="btnIrAPago">Continuar al pago</button>
+        </div>
+
+        <!-- Paso 4: Pago (pasarela demo) -->
+        <div class="card step-panel" id="panel-4">
+          <div class="panel-header">
+            <button class="btn-back" data-back="3">&larr;</button>
+            <div>
+              <h2>Elegí cómo pagar</h2>
+              <p class="muted">Pagás de forma segura con Mercado Pago (tarjeta o dinero en cuenta).</p>
+            </div>
+          </div>
+
+          <div class="pago-opciones">
+            <button class="pago-opcion" id="btnPagarSeña" data-tipo="SEÑA">
+              <span class="pago-opcion-titulo">Pagar seña (<span id="pctSeña">30</span>%)</span>
+              <span class="pago-opcion-monto" id="montoSeña">$ 0</span>
+              <span class="pago-opcion-nota">Asegura el turno. Saldo se paga en el club.</span>
+            </button>
+            <button class="pago-opcion" id="btnPagarTotal" data-tipo="TOTAL">
+              <span class="pago-opcion-titulo">Pagar el total</span>
+              <span class="pago-opcion-monto" id="montoTotal">$ 0</span>
+              <span class="pago-opcion-nota">Reserva queda pagada por completo.</span>
+            </button>
+          </div>
+
+          <div id="pagoError" class="form-error"></div>
+
+          <!-- Aviso de redirección / verificación de pago con Mercado Pago -->
+          <div id="pasarelaDemo" class="pasarela-demo hidden">
+            <div class="pasarela-box">
+              <div class="pasarela-logo">💳 Mercado Pago</div>
+              <p class="muted" id="pasarelaMensaje">Te llevamos a Mercado Pago para completar el pago...</p>
+              <div class="pasarela-monto" id="pasarelaMonto">$ 0</div>
+              <div class="pasarela-spinner" id="pasarelaSpinner"></div>
+              <div class="pasarela-acciones" id="pasarelaAcciones" style="display:none">
+                <button class="btn-primary" id="btnPasarelaCerrar">Entendido</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paso 5: Confirmación -->
+        <div class="card step-panel" id="panel-5">
+          <div class="confirm-icon">✓</div>
+          <h2>¡Reserva confirmada!</h2>
+          <p class="muted">Te enviamos los detalles por email.</p>
+          <div class="resumen-turno" id="resumenFinal"></div>
+          <div class="codigo-copiable">
+            <span id="codigoFinalTexto">RES000</span>
+            <button class="btn-icon-copy" id="btnCopiarCodigo" title="Copiar código">📋</button>
+          </div>
+          <button class="btn-secondary btn-block" id="btnNuevaReserva">Hacer otra reserva</button>
+        </div>
+
+      </section>
+
+      <!-- ================= VISTA: MI RESERVA ================= -->
+      <section id="view-miReserva" class="view">
+        <div class="card">
+          <h2>Consultá tu reserva</h2>
+          <p class="muted">Ingresá el código de reserva y el email con el que reservaste.</p>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Código de reserva</label>
+              <input type="text" id="inputCodigoReserva" placeholder="RES001" autocapitalize="characters" autocorrect="off" autocomplete="off">
+            </div>
+            <div class="form-field">
+              <label>Email</label>
+              <input type="email" id="inputEmailConsulta" placeholder="nombre@email.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off">
+            </div>
+          </div>
+          <div id="consultaError" class="form-error"></div>
+          <button class="btn-primary" id="btnConsultarReserva">Consultar</button>
+
+          <div id="resultadoConsulta" class="resultado-consulta"></div>
+        </div>
+      </section>
+
+    </main>
+
+    <div id="loadingOverlay" class="loading-overlay hidden">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <script>
+(function() {
+  /* ================= CONEXIÓN CON EL BACKEND (Apps Script) =================
+   * Pegá acá la URL /exec de tu Web App de Apps Script (Implementar >
+   * Nueva implementación > Acceso: Cualquier usuario). Reemplaza a
+   * google.script.run porque este HTML ya no vive dentro de Apps Script,
+   * vive en Netlify. */
+  var APPS_SCRIPT_URL = 'https://jeibzbijbmfcqeyxidgp.supabase.co/functions/v1/api';
+
+  function gsCall(fnName) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: fnName, args: args })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) throw new Error(data.error || 'Error desconocido.');
+        return data.result;
+      });
+  }
+
+  var state = {
+    fecha: null,
+    slotSeleccionado: null, // { canchaId, canchaNombre, horarioId, horaInicio, horaFin, precio }
+    datosIniciales: null,
+    datosJugador: null,
+    pagoActual: null // { pagoToken, tipoPago, monto }
+  };
+
+  var overlay = document.getElementById('loadingOverlay');
+  function showLoading() { overlay.classList.remove('hidden'); }
+  function hideLoading() { overlay.classList.add('hidden'); }
+
+  function runServer(fnName, onSuccess, onError) {
+    var args = Array.prototype.slice.call(arguments, 3);
+    showLoading();
+    gsCall.apply(null, [fnName].concat(args)).then(function(res) {
+      hideLoading();
+      onSuccess(res);
+    }).catch(function(err) {
+      hideLoading();
+      onError(err);
+    });
+  }
+
+  /* ---------------- Tabs ---------------- */
+  document.querySelectorAll('#mainTabs .tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#mainTabs .tab-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      document.getElementById('view-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ---------------- Navegación de pasos ---------------- */
+  function irAPaso(n) {
+    document.querySelectorAll('.step-panel').forEach(function(p) { p.classList.remove('active'); });
+    document.getElementById('panel-' + n).classList.add('active');
+    document.querySelectorAll('.step-dot').forEach(function(d) {
+      d.classList.toggle('active', parseInt(d.dataset.step, 10) <= n);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  document.querySelectorAll('[data-back]').forEach(function(btn) {
+    btn.addEventListener('click', function() { irAPaso(parseInt(btn.dataset.back, 10)); });
+  });
+
+  /* ---------------- Init: fecha mínima/máxima (NO SE MODIFICA) ---------------- */
+  runServer('obtenerDatosInicialesCliente', function(datos) {
+    state.datosIniciales = datos;
+    if (datos.nombreClub) {
+      document.title = datos.nombreClub;
+      document.querySelectorAll('.brand-name').forEach(function(el) { el.textContent = datos.nombreClub; });
+    }
+    var input = document.getElementById('inputFecha');
+    var hoy = new Date();
+    var max = new Date();
+    max.setDate(max.getDate() + datos.anticipacionMaxDias);
+    input.min = toISODate(hoy);
+    input.max = toISODate(max);
+    input.value = toISODate(hoy);
+  }, function(err) { alert('Error cargando datos: ' + err.message); });
+
+  function toISODate(d) {
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  /* ---------------- Paso 1 -> 2: Ver disponibilidad (NO SE MODIFICA) ---------------- */
+  document.getElementById('btnVerDisponibilidad').addEventListener('click', function() {
+    var fecha = document.getElementById('inputFecha').value;
+    if (!fecha) { alert('Elegí una fecha.'); return; }
+    state.fecha = fecha;
+
+    runServer('getDisponibilidad', function(data) {
+      renderGrilla(data);
+      var d = new Date(fecha + 'T00:00:00');
+      document.getElementById('fechaSeleccionadaLabel').textContent =
+        d.toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' });
+      irAPaso(2);
+    }, function(err) { alert(err.message); }, fecha);
+  });
+
+  function renderGrilla(data) {
+    var cont = document.getElementById('grillaTurnos');
+    cont.innerHTML = '';
+    data.horarios.forEach(function(h) {
+      var grupo = document.createElement('div');
+      grupo.className = 'horario-grupo';
+      var titulo = document.createElement('div');
+      titulo.className = 'horario-hora';
+      titulo.textContent = h.horaInicio + ' - ' + h.horaFin;
+      grupo.appendChild(titulo);
+
+      var row = document.createElement('div');
+      row.className = 'slots-row';
+      h.canchas.forEach(function(c) {
+        var btn = document.createElement('button');
+        btn.className = 'slot-btn' + (c.disponible ? '' : ' ocupado');
+        btn.textContent = c.nombreCancha;
+        btn.disabled = !c.disponible;
+        btn.addEventListener('click', function() {
+          state.slotSeleccionado = {
+            canchaId: c.canchaId, canchaNombre: c.nombreCancha,
+            horarioId: h.horarioId, horaInicio: h.horaInicio, horaFin: h.horaFin, precio: c.precio
+          };
+          mostrarResumenYFormulario();
+        });
+        row.appendChild(btn);
+      });
+      grupo.appendChild(row);
+      cont.appendChild(grupo);
+    });
+  }
+
+  function mostrarResumenYFormulario() {
+    var s = state.slotSeleccionado;
+    var d = new Date(state.fecha + 'T00:00:00');
+    document.getElementById('resumenTurno').innerHTML =
+      fila('Fecha', d.toLocaleDateString('es-AR', { day: 'numeric', month: 'long' })) +
+      fila('Cancha', s.canchaNombre) +
+      fila('Horario', s.horaInicio + ' - ' + s.horaFin) +
+      fila('Precio', formatMoneda(s.precio), true);
+    document.getElementById('formError').textContent = '';
+    irAPaso(3);
+  }
+
+  function fila(label, valor, total) {
+    return '<div class="fila' + (total ? ' total' : '') + '"><span>' + label + '</span><span>' + valor + '</span></div>';
+  }
+  function formatMoneda(n) { return '$ ' + Number(n || 0).toLocaleString('es-AR'); }
+
+  /* ---------------- Paso 3 -> 4: Ir a pago ---------------- */
+  document.getElementById('btnIrAPago').addEventListener('click', function() {
+    var data = {
+      fecha: state.fecha,
+      horarioId: state.slotSeleccionado.horarioId,
+      canchaId: state.slotSeleccionado.canchaId,
+      nombre: document.getElementById('inputNombre').value.trim(),
+      apellido: document.getElementById('inputApellido').value.trim(),
+      whatsapp: document.getElementById('inputWhatsapp').value.trim(),
+      email: document.getElementById('inputEmail').value.trim(),
+      observaciones: document.getElementById('inputObservaciones').value.trim()
+    };
+    var errorEl = document.getElementById('formError');
+    errorEl.textContent = '';
+    if (!data.nombre || !data.apellido || !data.whatsapp || !data.email) {
+      errorEl.textContent = 'Completá todos los campos obligatorios.';
+      return;
+    }
+    state.datosJugador = data;
+
+    var precio = state.slotSeleccionado.precio;
+    var pct = (state.datosIniciales && state.datosIniciales.porcentajeSeña) || 30;
+    var montoSeña = Math.round(precio * pct / 100);
+    document.getElementById('pctSeña').textContent = pct;
+    document.getElementById('montoSeña').textContent = formatMoneda(montoSeña);
+    document.getElementById('montoTotal').textContent = formatMoneda(precio);
+    document.getElementById('pagoError').textContent = '';
+    irAPaso(4);
+  });
+
+  /* ---------------- Paso 4: Elegir tipo de pago -> redirigir a Mercado Pago ---------------- */
+  function mostrarPasarela(mensaje, final, monto) {
+    document.getElementById('pasarelaMensaje').textContent = mensaje;
+    var montoEl = document.getElementById('pasarelaMonto');
+    montoEl.textContent = monto ? formatMoneda(monto) : '';
+    montoEl.style.display = monto ? '' : 'none';
+    document.getElementById('pasarelaSpinner').style.display = final ? 'none' : '';
+    document.getElementById('pasarelaAcciones').style.display = final ? '' : 'none';
+    document.getElementById('pasarelaDemo').classList.remove('hidden');
+  }
+  function ocultarPasarela() { document.getElementById('pasarelaDemo').classList.add('hidden'); }
+
+  function iniciarPago(tipoPago) {
+    var errorEl = document.getElementById('pagoError');
+    errorEl.textContent = '';
+    runServer('iniciarPagoReserva', function(res) {
+      state.pagoActual = { pagoToken: res.pagoToken, tipoPago: res.tipoPago, monto: res.monto };
+      mostrarPasarela('Te llevamos a Mercado Pago para completar el pago...', false, res.monto);
+      window.location.href = res.urlPago;
+    }, function(err) { errorEl.textContent = err.message; }, state.datosJugador, tipoPago);
+  }
+  document.getElementById('btnPagarSeña').addEventListener('click', function() { iniciarPago('SEÑA'); });
+  document.getElementById('btnPagarTotal').addEventListener('click', function() { iniciarPago('TOTAL'); });
+
+  document.getElementById('btnPasarelaCerrar').addEventListener('click', ocultarPasarela);
+
+  /* Al volver de Mercado Pago: la URL trae ?pago=ok|pendiente|error&t=TOKEN */
+  function procesarRetornoPago() {
+    var params = new URLSearchParams(window.location.search);
+    var retorno = params.get('pago');
+    var token = params.get('t');
+    if (!retorno || !token) return;
+    history.replaceState(null, '', window.location.pathname);
+
+    if (retorno === 'error') {
+      mostrarPasarela('El pago no se completó, así que no se cobró nada ni se reservó el turno. Podés intentar de nuevo.', true);
+      return;
+    }
+    mostrarPasarela(retorno === 'pendiente'
+      ? 'Tu pago está siendo procesado. Esperá unos segundos...'
+      : 'Confirmando tu pago...', false);
+
+    var intentos = 0;
+    function reintentar(errMsg) {
+      intentos++;
+      if (intentos < 10) { setTimeout(consultar, 3000); return; }
+      mostrarPasarela(errMsg || 'Todavía no recibimos la confirmación del pago. Si se te descontó dinero, en unos minutos te llega el email con tu reserva. Si no llega, contactá al club.', true);
+    }
+    function consultar() {
+      gsCall('verificarPagoReserva', token).then(function(res) {
+        if (res.estado === 'CONFIRMADO') { ocultarPasarela(); mostrarConfirmacionFinal(res.reserva); return; }
+        if (res.estado === 'CONFLICTO') {
+          mostrarPasarela('Tu pago fue aprobado, pero ese turno ya había sido ocupado. Contactá al club para coordinar la devolución o un nuevo horario. Referencia de pago: ' + res.mpPagoId, true);
+          return;
+        }
+        if (res.estado === 'EXPIRADO') {
+          mostrarPasarela('La sesión de pago venció. Si se te descontó dinero, contactá al club con tu comprobante.', true);
+          return;
+        }
+        reintentar();
+      }).catch(function(err) { reintentar('No pudimos verificar el pago: ' + err.message); });
+    }
+    consultar();
+  }
+
+  function mostrarConfirmacionFinal(r) {
+    document.getElementById('resumenFinal').innerHTML =
+      fila('Cancha', r.cancha) +
+      fila('Horario', r.horaInicio + ' - ' + r.horaFin) +
+      fila('Pagado', formatMoneda(r.pagado)) +
+      fila('Saldo pendiente', formatMoneda(r.saldo)) +
+      fila('Estado', r.estado, true);
+    document.getElementById('codigoFinalTexto').textContent = r.reservaId;
+    irAPaso(5);
+  }
+
+  document.getElementById('btnCopiarCodigo').addEventListener('click', function() {
+    var codigo = document.getElementById('codigoFinalTexto').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(codigo);
+    }
+    var btn = this;
+    var original = btn.textContent;
+    btn.textContent = '✓';
+    setTimeout(function() { btn.textContent = original; }, 1200);
+  });
+
+  document.getElementById('btnNuevaReserva').addEventListener('click', function() {
+    state.slotSeleccionado = null;
+    state.datosJugador = null;
+    state.pagoActual = null;
+    document.getElementById('inputNombre').value = '';
+    document.getElementById('inputApellido').value = '';
+    document.getElementById('inputWhatsapp').value = '';
+    document.getElementById('inputEmail').value = '';
+    document.getElementById('inputObservaciones').value = '';
+    irAPaso(1);
+  });
+
+  /* ---------------- Vista: Mi reserva (CORREGIDA) ---------------- */
+  document.getElementById('btnConsultarReserva').addEventListener('click', function() {
+    var codigo = document.getElementById('inputCodigoReserva').value.trim();
+    var email = document.getElementById('inputEmailConsulta').value.trim();
+    var errorEl = document.getElementById('consultaError');
+    errorEl.textContent = '';
+    var resultado = document.getElementById('resultadoConsulta');
+    resultado.innerHTML = '';
+
+    if (!codigo || !email) { errorEl.textContent = 'Completá el código y el email.'; return; }
+
+    runServer('consultarReservaCliente', function(r) {
+      resultado.innerHTML =
+        '<div class="resumen-turno">' +
+        fila('Código', r.reservaId) +
+        fila('Cancha', r.cancha) +
+        fila('Fecha', r.fechaLegible) +
+        fila('Horario', r.horaInicio + ' - ' + r.horaFin) +
+        fila('Estado', '<span class="estado-badge estado-' + r.estado + '">' + r.estado + '</span>') +
+        fila('Importe total', formatMoneda(r.precio)) +
+        fila('Pagado', formatMoneda(r.pagado)) +
+        fila('Saldo', formatMoneda(r.saldo), true) +
+        '</div>' +
+        (r.puedeCancelar
+          ? '<button class="btn-secondary btn-block" id="btnCancelarReserva" style="margin-top:14px;">Cancelar reserva</button>' +
+            '<p class="muted" style="margin-top:8px;">La seña abonada no es reembolsable.</p>'
+          : '<p class="form-error" style="margin-top:14px;">' + (r.motivoNoCancelable || '') + '</p>');
+
+      if (r.puedeCancelar) {
+        document.getElementById('btnCancelarReserva').addEventListener('click', function() {
+          if (!confirm('¿Seguro que querés cancelar? La seña abonada no se reembolsa.')) return;
+          runServer('cancelarReservaCliente', function() {
+            document.getElementById('btnConsultarReserva').click();
+          }, function(err) { alert(err.message); }, codigo, email);
+        });
+      }
+    }, function(err) { errorEl.textContent = err.message; }, codigo, email);
+  });
+
+  procesarRetornoPago();
+})();
+</script>
+
+</body>
+</html>
