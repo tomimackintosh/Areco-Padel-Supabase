@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/admin/manifest.json">
+  <meta name="theme-color" content="#0b0b0c">
+  <title>Areco Padel | Panel</title>
+  <style>
+  :root {
+    --accent: #CCFF00;
+    --accent-dim: rgba(204, 255, 0, 0.14);
+    --bg: #0b0b0c;
+    --bg-elevated: #141416;
+    --sidebar-bg: #101012;
+    --panel: rgba(255, 255, 255, 0.045);
+    --panel-border: rgba(255, 255, 255, 0.09);
+    --text: #f2f2f2;
+    --text-muted: #9a9a9e;
+    --ok: #35d07f;
+    --busy: #ff5c5c;
+    --warn: #ffb84d;
+    --radius: 16px;
+    font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+  .hidden { display: none !important; }
+  .muted { color: var(--text-muted); font-size: 13.5px; }
+  .brand-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 10px var(--accent); display: inline-block; margin-right: 8px; }
+
+  /* -------- Login -------- */
+  .login-screen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 30% 20%, #16181a 0%, #0b0b0c 60%);
+  }
+  .login-card {
+    width: 100%; max-width: 380px; background: var(--panel); border: 1px solid var(--panel-border);
+    border-radius: var(--radius); padding: 32px; backdrop-filter: blur(18px);
+  }
+  .login-brand { display: flex; align-items: center; font-weight: 700; margin-bottom: 18px; font-size: 14px; }
+  .login-card h1 { font-size: 21px; margin: 0 0 14px; }
+  .input-field {
+    width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--panel-border);
+    background: var(--bg-elevated); color: var(--text); font-size: 14px; margin-bottom: 14px;
+  }
+  .input-field:focus { outline: none; border-color: var(--accent); }
+  .input-field.small { width: auto; margin-bottom: 0; }
+  .codigo-input { text-align: center; letter-spacing: 8px; font-size: 20px; font-weight: 700; }
+
+  .btn-primary {
+    background: var(--accent); color: #10120a; border: none; padding: 12px 20px;
+    border-radius: 10px; font-weight: 700; font-size: 13.5px; cursor: pointer; transition: all .15s ease;
+  }
+  .btn-primary:hover { box-shadow: 0 0 16px var(--accent-dim); }
+  .btn-block { width: 100%; }
+  .btn-secondary {
+    background: transparent; border: 1px solid var(--panel-border); color: var(--text);
+    padding: 11px 18px; border-radius: 10px; font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  .btn-link { background: none; border: none; color: var(--text-muted); font-size: 12.5px; text-decoration: underline; cursor: pointer; display: block; margin: 10px auto 0; }
+  .btn-icon {
+    background: var(--bg-elevated); border: 1px solid var(--panel-border); color: var(--text);
+    padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; margin-right: 4px;
+  }
+  .btn-icon.danger { color: var(--busy); border-color: rgba(255,92,92,0.3); }
+  .form-error { color: var(--busy); font-size: 13px; min-height: 4px; }
+
+  /* -------- Shell -------- */
+  .app-shell { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 230px; background: var(--sidebar-bg); border-right: 1px solid var(--panel-border);
+    display: flex; flex-direction: column; padding: 20px 14px; flex-shrink: 0;
+  }
+  .sidebar-brand { display: flex; align-items: center; font-weight: 700; font-size: 14.5px; padding: 6px 8px 22px; }
+  .btn-hamburguesa { display: none; }
+  .side-nav { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+  .nav-item {
+    text-align: left; background: none; border: none; color: var(--text-muted); padding: 11px 12px;
+    border-radius: 10px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .nav-item.active { background: var(--accent-dim); color: var(--accent); }
+  .sidebar-footer { border-top: 1px solid var(--panel-border); padding-top: 14px; }
+  .user-badge { font-size: 12.5px; color: var(--text-muted); padding: 0 8px 4px; }
+
+  .main-panel { flex: 1; padding: 30px 36px; max-width: 1180px; }
+  .main-panel h1 { font-size: 22px; margin: 0 0 20px; }
+  .view-panel { display: none; }
+  .view-panel.active { display: block; }
+  .view-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; }
+  .view-header h1 { margin: 0; }
+  .view-header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .kpi-card {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; padding: 18px;
+    backdrop-filter: blur(14px); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(204,255,0,0.35);
+    box-shadow: 0 10px 28px rgba(204,255,0,0.08);
+  }
+  .kpi-card .kpi-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+  .kpi-card .kpi-value { font-size: 24px; font-weight: 700; }
+  .kpi-card .kpi-value.accent { color: var(--accent); }
+
+  .filters-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .table-wrap { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px; overflow-x: auto; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 640px; }
+  .data-table th {
+    text-align: left; padding: 12px 14px; color: var(--text-muted); font-weight: 600; font-size: 11.5px;
+    text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 1px solid var(--panel-border);
+  }
+  .data-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .estado-badge { display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .estado-CONFIRMADA { background: rgba(204,255,0,0.16); color: var(--accent); }
+  .estado-PARCIAL { background: rgba(255,184,77,0.14); color: var(--warn); }
+  .estado-CANCELADA { background: rgba(255,92,92,0.14); color: var(--busy); }
+
+  /* -------- Dashboard: períodos, destacado, gráficos -------- */
+  .periodo-tabs { display: flex; gap: 4px; background: var(--panel); padding: 4px; border-radius: 100px; border: 1px solid var(--panel-border); }
+  .periodo-btn, .reservas-subtab {
+    border: none; background: transparent; color: var(--text-muted); padding: 8px 14px;
+    border-radius: 100px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  }
+  .periodo-btn.active, .reservas-subtab.active { background: var(--accent); color: #10120a; }
+
+  .hoy-destacado { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
+  .hoy-destacado .hoy-item { text-align: center; }
+  .hoy-destacado .hoy-label { font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .hoy-destacado .hoy-valor { font-size: 22px; font-weight: 800; color: var(--accent); }
+
+  .ingresos-progreso {
+    margin-top: 18px; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .ingresos-progreso:hover {
+    transform: translateY(-3px);
+    border-color: rgba(204,255,0,0.35);
+    box-shadow: 0 10px 28px rgba(204,255,0,0.08);
+  }
+  .ip-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }
+  .ip-header h3 { margin: 0; font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+  .ip-porc { font-size: 20px; font-weight: 800; color: var(--accent); }
+  .ip-track { width: 100%; height: 12px; border-radius: 100px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .ip-fill { height: 100%; border-radius: 100px; background: linear-gradient(90deg, rgba(204,255,0,0.55), #CCFF00); transition: width .4s ease; }
+  .ip-footer { display: flex; justify-content: space-between; margin-top: 10px; font-size: 12.5px; color: var(--text-muted); }
+  .ip-footer b { color: var(--text); }
+
+  .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 18px; }
+  .chart-card {
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .chart-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(204,255,0,0.35);
+    box-shadow: 0 10px 28px rgba(204,255,0,0.08);
+  }
+  .chart-card h3 { margin: 0 0 12px; font-size: 13.5px; color: var(--text-muted); font-weight: 600; }
+  .chart-card canvas { max-height: 240px; }
+
+  /* -------- Calendario de reservas -------- */
+  .reservas-sub { display: none; }
+  .reservas-sub.active { display: block; }
+  .cal-mes-anio { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; }
+  .cal-nav { align-items: center; }
+  .cal-nav .input-field.small { text-align: center; }
+  .calendario-grid-wrap { overflow-x: auto; margin-top: 16px; }
+  .calendario-grid { display: grid; gap: 8px; align-items: stretch; }
+  .cal-col-header {
+    font-size: 12.5px; font-weight: 700; text-align: center; color: var(--text);
+    padding: 4px 4px 10px; text-transform: uppercase; letter-spacing: .5px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .cal-row-label {
+    font-size: 11.5px; font-weight: 700; color: var(--text-muted);
+    display: flex; align-items: center; padding: 0 6px 0 2px; white-space: nowrap;
+  }
+  .cal-cell {
+    display: flex; flex-direction: column; justify-content: center; gap: 3px; min-height: 58px;
+    border-radius: 10px; border: 1px solid rgba(53,208,127,0.25);
+    padding: 8px 10px; cursor: pointer; font-size: 11px; transition: all .15s ease;
+    background: rgba(53,208,127,0.08);
+  }
+  .cal-cell:hover { border-color: var(--accent); }
+  .cal-cell.ocupada { background: rgba(255,92,92,0.09); border-color: rgba(255,92,92,0.28); }
+  .cal-cell.ocupada .cal-cliente {
+    color: var(--text); font-weight: 700; font-size: 11.5px;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .cal-cell.ocupada .cal-pago { font-size: 10.5px; color: var(--text-muted); }
+  .cal-cell.oculta { opacity: 0.25; pointer-events: none; }
+
+  .toggle { position: relative; width: 38px; height: 20px; display: inline-block; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: rgba(255,255,255,0.15); border-radius: 100px; cursor: pointer; transition: .2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 14px; height: 14px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+  .toggle input:checked + .toggle-slider { background: var(--accent); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius);
+    padding: 22px; backdrop-filter: blur(14px);
+  }
+  .config-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 16px; }
+  .config-row:last-child { border-bottom: none; }
+  .config-row label { font-size: 13px; color: var(--text-muted); flex: 1; }
+  .config-row input { flex: 1; max-width: 220px; }
+
+  /* -------- Modal -------- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-box {
+    background: #141416; border: 1px solid var(--panel-border); border-radius: 18px; padding: 26px;
+    width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+  }
+  .modal-box h2 { margin-top: 0; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 18px; }
+  .form-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-grid2 .full { grid-column: 1 / -1; }
+  .field-label { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-bottom: 6px; display: block; }
+
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: #1c1c1e; border: 1px solid var(--panel-border); color: var(--text);
+    padding: 12px 20px; border-radius: 12px; font-size: 13.5px; z-index: 1100;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.error { border-color: rgba(255,92,92,0.4); color: #ffb3b3; }
+
+  .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1200; }
+  .spinner { width: 38px; height: 38px; border: 3px solid rgba(204,255,0,0.2); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 900px) {
+    .app-shell { flex-direction: column; }
+    .sidebar { width: 100%; flex-direction: column; align-items: stretch; padding: 0; }
+    .sidebar-brand { padding: 16px 16px; justify-content: space-between; }
+    .btn-hamburguesa {
+      display: block; background: none; border: 1px solid var(--panel-border); color: var(--text);
+      font-size: 18px; line-height: 1; padding: 6px 11px; border-radius: 8px; cursor: pointer;
+    }
+    .side-nav {
+      flex-direction: column; max-height: 0; overflow: hidden; gap: 2px; padding: 0 10px;
+      transition: max-height .22s ease;
+    }
+    .sidebar-footer {
+      border-top: none; padding: 0 14px; margin-left: 0; max-height: 0; overflow: hidden;
+      transition: max-height .22s ease;
+    }
+    .sidebar.abierta .side-nav { max-height: 420px; padding: 6px 10px 10px; }
+    .sidebar.abierta .sidebar-footer { max-height: 120px; padding: 10px 14px 16px; border-top: 1px solid var(--panel-border); }
+    .nav-item { padding: 13px 12px; }
+    .main-panel { padding: 20px; }
+
+    /* Las barras de arriba de cada sección (filtros de período, subtabs de
+       Reservas + botones) no entran en una sola línea en pantallas chicas:
+       se dejan envolver en vez de desbordar el ancho de la página. */
+    .view-header { flex-wrap: wrap; row-gap: 10px; }
+    .view-header-actions { flex-wrap: wrap; width: 100%; }
+    .periodo-tabs { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .periodo-btn, .reservas-subtab { white-space: nowrap; flex-shrink: 0; }
+  }
+
+  .btn-actualizar { white-space: nowrap; }
+  .btn-actualizar.girando { animation: girar 0.8s linear infinite; }
+  @keyframes girar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+</head>
+<body>
+
+  <!-- ================= LOGIN ================= -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-brand">
+        <span class="brand-dot"></span>
+        <span class="brand-text">Areco Padel</span>
+      </div>
+      <h1>Panel administrativo</h1>
+
+      <div id="loginStep1">
+        <p class="muted">Ingresá tu email para recibir un código de acceso.</p>
+        <input type="email" id="loginEmail" placeholder="tu@email.com" class="input-field">
+        <button class="btn-primary btn-block" id="btnSolicitarCodigo">Enviar código</button>
+      </div>
+
+      <div id="loginStep2" class="hidden">
+        <p class="muted">Ingresá el código de 6 dígitos que enviamos a tu email.</p>
+        <input type="text" id="loginCodigo" maxlength="6" placeholder="123456" class="input-field codigo-input">
+        <button class="btn-primary btn-block" id="btnVerificarCodigo">Ingresar</button>
+        <button class="btn-link" id="btnReenviarCodigo">Reenviar código</button>
+      </div>
+
+      <div id="loginError" class="form-error"></div>
+    </div>
+  </div>
+
+  <!-- ================= APP ================= -->
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-dot"></span>
+        <span class="brand-text">Areco Padel</span>
+        <button class="btn-hamburguesa" id="btnMenuMobile" aria-label="Abrir menú">☰</button>
+      </div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="dashboard">Dashboard</button>
+        <button class="nav-item" data-view="reservas">Reservas</button>
+        <button class="nav-item" data-view="clientes">Clientes</button>
+        <button class="nav-item" data-view="canchas">Canchas y horarios</button>
+        <button class="nav-item admin-only" data-view="configuracion">Configuración</button>
+        <button class="nav-item admin-only" data-view="usuarios">Usuarios</button>
+      </nav>
+      <div class="sidebar-footer">
+        <div id="userBadge" class="user-badge"></div>
+        <button class="btn-link" id="btnActivarPush">🔔 Activar notificaciones</button>
+        <button class="btn-link" id="btnLogout">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+
+      <!-- DASHBOARD -->
+      <section class="view-panel active" id="v-dashboard">
+        <div class="view-header">
+          <h1>Dashboard</h1>
+          <div class="view-header-actions">
+            <div class="periodo-tabs" id="periodoTabs">
+              <button class="periodo-btn active" data-periodo="HOY">Hoy</button>
+              <button class="periodo-btn" data-periodo="7D">Últimos 7 días</button>
+              <button class="periodo-btn" data-periodo="MES">Último mes</button>
+              <button class="periodo-btn" data-periodo="ANIO">Todo el año</button>
+              <button class="periodo-btn" data-periodo="MAÑANA">Mañana</button>
+              <button class="periodo-btn" data-periodo="PROX_7D">Próximos 7 días</button>
+            </div>
+            <button class="btn-secondary btn-actualizar" id="btnActualizarDashboard" title="Traer datos actualizados">⟳ Actualizar</button>
+          </div>
+        </div>
+
+        <div class="kpi-grid" id="kpiGrid"></div>
+
+        <div class="card ingresos-progreso" id="ingresosProgreso"></div>
+
+        <div class="charts-grid">
+          <div class="card chart-card"><h3>Ocupados vs disponibles</h3><canvas id="chartOcupadosDisponibles"></canvas></div>
+          <div class="card chart-card"><h3>Ocupación por cancha</h3><canvas id="chartOcupacionCancha"></canvas></div>
+          <div class="card chart-card"><h3>Horarios más demandados</h3><canvas id="chartHorarios"></canvas></div>
+          <div class="card chart-card"><h3>Reservas por día</h3><canvas id="chartReservasDia"></canvas></div>
+        </div>
+      </section>
+
+      <!-- RESERVAS -->
+      <section class="view-panel" id="v-reservas">
+        <div class="view-header">
+          <h1>Reservas</h1>
+          <div class="view-header-actions">
+            <div class="periodo-tabs">
+              <button class="reservas-subtab active" data-subtab="calendario">Calendario</button>
+              <button class="reservas-subtab" data-subtab="listado">Listado</button>
+            </div>
+            <button class="btn-primary" id="btnNuevaReservaAdmin">+ Nueva reserva</button>
+            <button class="btn-secondary btn-actualizar" id="btnActualizarReservas" title="Traer datos actualizados">⟳ Actualizar</button>
+          </div>
+        </div>
+
+        <!-- Sub-vista: Calendario diario (simple: sin filtros, solo navegación de día) -->
+        <div class="reservas-sub active" id="sub-calendario">
+          <div class="cal-mes-anio" id="calMesAnio"></div>
+          <div class="filters-bar cal-nav">
+            <button class="btn-secondary" id="btnDiaAnterior">&larr;</button>
+            <input type="date" id="calendarioFecha" class="input-field small">
+            <button class="btn-secondary" id="btnDiaSiguiente">&rarr;</button>
+            <button class="btn-secondary" id="btnHoy">Hoy</button>
+          </div>
+          <div class="legend">
+            <span class="legend-item"><i class="dot dot-disponible"></i>Disponible</span>
+            <span class="legend-item"><i class="dot dot-ocupado"></i>Reservado</span>
+          </div>
+          <div class="calendario-grid-wrap">
+            <div id="calendarioGrid" class="calendario-grid"></div>
+          </div>
+        </div>
+
+
+        <!-- Sub-vista: Listado con filtros / rango -->
+        <div class="reservas-sub" id="sub-listado">
+          <div class="filters-bar">
+            <input type="date" id="filtroFechaDesde" class="input-field small" title="Desde">
+            <input type="date" id="filtroFechaHasta" class="input-field small" title="Hasta">
+            <select id="filtroCancha" class="input-field small"><option value="">Todas las canchas</option></select>
+            <select id="filtroEstado" class="input-field small">
+              <option value="">Todos los estados</option>
+              <option value="PARCIAL">Parcial</option>
+              <option value="CONFIRMADA">Confirmada</option>
+              <option value="CANCELADA">Cancelada</option>
+            </select>
+            <button class="btn-secondary" id="btnLimpiarFiltros">Limpiar</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="tablaReservas">
+              <thead>
+                <tr>
+                  <th>ID</th><th>Fecha</th><th>Horario</th><th>Cancha</th><th>Cliente</th>
+                  <th>Estado</th><th>Precio</th><th>Pagado</th><th>Saldo</th><th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- CLIENTES -->
+      <section class="view-panel" id="v-clientes">
+        <div class="view-header">
+          <h1>Clientes</h1>
+          <button class="btn-secondary btn-actualizar" id="btnActualizarClientes" title="Traer datos actualizados">⟳ Actualizar</button>
+        </div>
+        <input type="text" id="buscarCliente" class="input-field" placeholder="Buscar por nombre o email...">
+        <div class="table-wrap">
+          <table class="data-table" id="tablaClientes">
+            <thead><tr><th>ID</th><th>Nombre</th><th>WhatsApp</th><th>Email</th><th>Alta</th><th>Activo</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CANCHAS Y HORARIOS -->
+      <section class="view-panel" id="v-canchas">
+        <h1>Canchas y horarios</h1>
+        <h3>Canchas</h3>
+        <div class="table-wrap">
+          <table class="data-table" id="tablaCanchas">
+            <thead><tr><th>ID</th><th>Nombre</th><th>Tipo</th><th>Precio</th><th>Activa</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h3 style="margin-top:28px;">Horarios</h3>
+        <div class="table-wrap">
+          <table class="data-table" id="tablaHorarios">
+            <thead><tr><th>ID</th><th>Desde</th><th>Hasta</th><th>Activo</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CONFIGURACION -->
+      <section class="view-panel" id="v-configuracion">
+        <h1>Configuración general</h1>
+        <div class="card" id="configForm"></div>
+        <button class="btn-primary" id="btnGuardarConfig" style="margin-top:16px;">Guardar cambios</button>
+      </section>
+
+      <!-- USUARIOS -->
+      <section class="view-panel" id="v-usuarios">
+        <div class="view-header">
+          <h1>Usuarios</h1>
+          <button class="btn-primary" id="btnNuevoUsuario">+ Nuevo usuario</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="tablaUsuarios">
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Activo</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALES ================= -->
+  <div id="modalOverlay" class="modal-overlay hidden">
+    <div class="modal-box" id="modalBox"></div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <div id="loadingOverlay" class="loading-overlay hidden"><div class="spinner"></div></div>
+
+  <script>
+(function() {
+  /* ================= CONEXIÓN CON EL BACKEND (Apps Script) =================
+   * Pegá acá la URL /exec de tu Web App de Apps Script (Implementar >
+   * Nueva implementación > Acceso: Cualquier usuario). Reemplaza a
+   * google.script.run porque este HTML ya no vive dentro de Apps Script,
+   * vive en Netlify. Usá la MISMA URL que en index.html. */
+  var APPS_SCRIPT_URL = 'https://jeibzbijbmfcqeyxidgp.supabase.co/functions/v1/api';
+
+  function gsCall(fnName) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    return fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ fn: fnName, args: args })
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (!data.ok) throw new Error(data.error || 'Error desconocido.');
+        return data.result;
+      });
+  }
+
+  var TOKEN_KEY = 'areco_admin_token';
+  var state = {
+    token: sessionStorage.getItem(TOKEN_KEY) || null,
+    usuario: null,
+    canchas: [],
+    horarios: [],
+    emailPendiente: null,
+    calFecha: null,
+    charts: {}
+  };
+
+  var overlay = document.getElementById('loadingOverlay');
+  function showLoading() { overlay.classList.remove('hidden'); }
+  function hideLoading() { overlay.classList.add('hidden'); }
+
+  function toast(msg, isError) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isError ? ' error' : '');
+    t.classList.remove('hidden');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function() { t.classList.add('hidden'); }, 3500);
+  }
+
+  function run(fnName, onSuccess, onError) {
+    var args = Array.prototype.slice.call(arguments, 3);
+    showLoading();
+    gsCall.apply(null, [fnName].concat(args)).then(function(res) {
+      hideLoading();
+      onSuccess(res);
+    }).catch(function(err) {
+      hideLoading();
+      if (err && /sesión expiró/i.test(err.message)) { cerrarSesionLocal(); }
+      onError(err);
+    });
+  }
+  function runAuth(fnName, onSuccess, onError) {
+    var extra = Array.prototype.slice.call(arguments, 3);
+    return run.apply(null, [fnName, onSuccess, onError, state.token].concat(extra));
+  }
+
+  function formatMoneda(n) { return '$ ' + Number(n || 0).toLocaleString('es-AR'); }
+  function toISODate(d) {
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return d.getFullYear() + '-' + m + '-' + day;
+  }
+
+  /* ================= LOGIN ================= */
+  document.getElementById('btnSolicitarCodigo').addEventListener('click', function() {
+    var email = document.getElementById('loginEmail').value.trim();
+    var errEl = document.getElementById('loginError');
+    errEl.textContent = '';
+    if (!email) { errEl.textContent = 'Ingresá tu email.'; return; }
+    run('solicitarCodigoAcceso', function() {
+      state.emailPendiente = email;
+      document.getElementById('loginStep1').classList.add('hidden');
+      document.getElementById('loginStep2').classList.remove('hidden');
+    }, function(err) { errEl.textContent = err.message; }, email);
+  });
+
+  document.getElementById('btnReenviarCodigo').addEventListener('click', function() {
+    run('solicitarCodigoAcceso', function() { toast('Código reenviado.'); }, function(err) { toast(err.message, true); }, state.emailPendiente);
+  });
+
+  document.getElementById('loginEmail').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnSolicitarCodigo').click(); }
+  });
+  document.getElementById('loginCodigo').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); document.getElementById('btnVerificarCodigo').click(); }
+  });
+
+  document.getElementById('btnVerificarCodigo').addEventListener('click', function() {
+    var codigo = document.getElementById('loginCodigo').value.trim();
+    var errEl = document.getElementById('loginError');
+    errEl.textContent = '';
+    run('verificarCodigo', function(res) {
+      state.token = res.token;
+      state.usuario = res.usuario;
+      sessionStorage.setItem(TOKEN_KEY, res.token);
+      iniciarApp();
+    }, function(err) { errEl.textContent = err.message; }, state.emailPendiente, codigo);
+  });
+
+  document.getElementById('btnLogout').addEventListener('click', function() {
+    run('cerrarSesion', function() { cerrarSesionLocal(); }, function() { cerrarSesionLocal(); }, state.token);
+  });
+
+  /* ================= Notificaciones push (OneSignal) =================
+   * Pegá acá el App ID de OneSignal (Settings > Keys & IDs). No es secreto,
+   * a diferencia de la REST API Key, que va del lado de Apps Script. */
+  var ONESIGNAL_APP_ID = 'PEGAR_AQUI_TU_ONESIGNAL_APP_ID';
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(function(OneSignal) {
+    OneSignal.init({ appId: ONESIGNAL_APP_ID }).then(function() {
+      OneSignal.User.PushSubscription.addEventListener('change', function(evento) {
+        if (evento.current && evento.current.id) {
+          toast('ID de notificaciones: ' + evento.current.id + ' (copialo a Apps Script)');
+          console.log('OneSignal Subscription ID:', evento.current.id);
+        }
+      });
+    });
+  });
+
+  document.getElementById('btnActivarPush').addEventListener('click', function() {
+    if (ONESIGNAL_APP_ID.indexOf('PEGAR_AQUI') === 0) {
+      toast('Primero hay que configurar el OneSignal App ID en el código.', true);
+      return;
+    }
+    OneSignalDeferred.push(function(OneSignal) {
+      if (OneSignal.User.PushSubscription.id) {
+        toast('Ya está activado. ID: ' + OneSignal.User.PushSubscription.id);
+        return;
+      }
+      OneSignal.Notifications.requestPermission();
+    });
+  });
+
+  function cerrarSesionLocal() {
+    sessionStorage.removeItem(TOKEN_KEY);
+    state.token = null;
+    document.getElementById('appShell').classList.add('hidden');
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('loginStep1').classList.remove('hidden');
+    document.getElementById('loginStep2').classList.add('hidden');
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginCodigo').value = '';
+  }
+
+  if (state.token) {
+    run('validarSesionActual', function(res) {
+      if (res.ok) { state.usuario = res.usuario; iniciarApp(); }
+      else { cerrarSesionLocal(); }
+    }, function() { cerrarSesionLocal(); }, state.token);
+  }
+
+  gsCall('getConfig').then(function(config) {
+    if (config && config.Nombre_Club) {
+      document.title = config.Nombre_Club + ' | Panel';
+      document.querySelectorAll('.brand-text').forEach(function(el) { el.textContent = config.Nombre_Club; });
+    }
+  }).catch(function() { /* si falla, se queda el nombre por defecto */ });
+
+  /* ================= APP PRINCIPAL ================= */
+  function iniciarApp() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('appShell').classList.remove('hidden');
+    document.getElementById('userBadge').textContent = state.usuario.nombre + ' · ' + state.usuario.rol;
+
+    if (state.usuario.rol !== 'ADMIN') {
+      document.querySelectorAll('.admin-only').forEach(function(el) { el.style.display = 'none'; });
+    }
+
+    state.calFecha = toISODate(new Date());
+    document.getElementById('calendarioFecha').value = state.calFecha;
+
+    cargarCanchasYHorarios(function() {
+      cargarDashboard('HOY');
+      cargarCalendarioDia();
+    });
+  }
+
+  /* ---------------- Navegación lateral ---------------- */
+  document.getElementById('btnMenuMobile').addEventListener('click', function() {
+    document.getElementById('sidebar').classList.toggle('abierta');
+  });
+
+  document.querySelectorAll('.nav-item').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.view-panel').forEach(function(v) { v.classList.remove('active'); });
+      document.getElementById('v-' + btn.dataset.view).classList.add('active');
+      document.getElementById('sidebar').classList.remove('abierta');
+
+      if (btn.dataset.view === 'dashboard') cargarDashboard(state.periodoActual || 'HOY');
+      if (btn.dataset.view === 'reservas') cargarCalendarioDia();
+      if (btn.dataset.view === 'clientes') cargarClientes();
+      if (btn.dataset.view === 'canchas') renderCanchasHorarios();
+      if (btn.dataset.view === 'configuracion') cargarConfiguracion();
+      if (btn.dataset.view === 'usuarios') cargarUsuarios();
+    });
+  });
+
+  /* ================= DASHBOARD ================= */
+  document.querySelectorAll('#periodoTabs .periodo-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('#periodoTabs .periodo-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      cargarDashboard(btn.dataset.periodo);
+    });
+  });
+
+  var ETIQUETAS_PERIODO = {
+    HOY: 'hoy', '7D': 'últimos 7 días', MES: 'último mes', ANIO: 'todo el año',
+    'MAÑANA': 'mañana', PROX_7D: 'próximos 7 días'
+  };
+
+  function cargarDashboard(periodo, forzar) {
+    state.periodoActual = periodo;
+    runAuth('obtenerResumenDashboard', function(d) {
+      var r = d.resumen;
+      document.getElementById('kpiGrid').innerHTML =
+        kpi('Reservas (' + (ETIQUETAS_PERIODO[d.periodo] || d.periodo) + ')', r.reservas) +
+        kpi('Ocupación', r.ocupacionPorc + '%') +
+        kpi('Turnos libres', r.turnosLibres) +
+        kpi('Ingresos cobrados', formatMoneda(r.ingresosCobrados), true) +
+        kpi('Ingresos pendientes', formatMoneda(r.ingresosPendientes)) +
+        kpi('Ingresos potenciales', formatMoneda(r.ingresosPotenciales)) +
+        kpi('Cancha más usada', r.canchaMasUsada || '—') +
+        kpi('Horario más demandado', r.horarioMasDemandado || '—');
+
+      document.getElementById('ingresosProgreso').innerHTML =
+        '<div class="ip-header"><h3>Ingresos del período</h3><span class="ip-porc">' + r.progresoCobroPorc + '%</span></div>' +
+        '<div class="ip-track"><div class="ip-fill" style="width:' + r.progresoCobroPorc + '%"></div></div>' +
+        '<div class="ip-footer"><span><b>' + formatMoneda(r.ingresosCobrados) + '</b> cobrados de <b>' + formatMoneda(r.ingresosPotenciales) + '</b> reservados</span>' +
+        '<span>Pendiente: <b>' + formatMoneda(r.ingresosPendientes) + '</b></span></div>';
+
+      renderChart('chartReservasDia', 'line', d.graficos.reservasPorDia.etiquetas, d.graficos.reservasPorDia.valores, 'Reservas');
+      renderChart('chartOcupacionCancha', 'bar', d.graficos.ocupacionPorCancha.etiquetas, d.graficos.ocupacionPorCancha.valores, 'Reservas');
+      renderChart('chartHorarios', 'bar', d.graficos.reservasPorHorario.etiquetas, d.graficos.reservasPorHorario.valores, 'Reservas');
+      renderDonut('chartOcupadosDisponibles', d.graficos.ocupacionDonut.ocupados, d.graficos.ocupacionDonut.disponibles);
+    }, function(err) { toast(err.message, true); }, periodo, forzar);
+  }
+  function kpi(label, value, accent) {
+    return '<div class="kpi-card"><div class="kpi-label">' + label + '</div><div class="kpi-value' + (accent ? ' accent' : '') + '">' + value + '</div></div>';
+  }
+  function renderChart(canvasId, tipo, etiquetas, valores, nombreSerie) {
+    if (typeof Chart === 'undefined') return;
+    var ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (state.charts[canvasId]) state.charts[canvasId].destroy();
+    state.charts[canvasId] = new Chart(ctx, {
+      type: tipo,
+      data: { labels: etiquetas, datasets: [{ label: nombreSerie, data: valores, backgroundColor: 'rgba(204,255,0,0.55)', borderColor: '#CCFF00', tension: 0.3 }] },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { color: '#9a9a9e' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+          y: { ticks: { color: '#9a9a9e' }, grid: { color: 'rgba(255,255,255,0.05)' }, beginAtZero: true }
+        }
+      }
+    });
+  }
+  function renderDonut(canvasId, ocupados, disponibles) {
+    if (typeof Chart === 'undefined') return;
+    var ctx = document.getElementById(canvasId);
+    if (!ctx) return;
+    if (state.charts[canvasId]) state.charts[canvasId].destroy();
+    state.charts[canvasId] = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Ocupados', 'Disponibles'],
+        datasets: [{ data: [ocupados, disponibles], backgroundColor: ['#CCFF00', 'rgba(255,255,255,0.12)'], borderWidth: 0 }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '68%',
+        plugins: { legend: { position: 'bottom', labels: { color: '#9a9a9e', boxWidth: 10, padding: 14 } } }
+      }
+    });
+  }
+
+  /* ================= CANCHAS Y HORARIOS (cache para selects) ================= */
+  function cargarCanchasYHorarios(cb) {
+    Promise.all([gsCall('listarCanchas', false), gsCall('listarHorarios', false)])
+      .then(function(res) {
+        var canchas = res[0], horarios = res[1];
+        state.canchas = canchas;
+        state.horarios = horarios;
+        [document.getElementById('filtroCancha')].forEach(function(sel) {
+          canchas.forEach(function(c) {
+            var opt = document.createElement('option');
+            opt.value = c.canchaId; opt.textContent = c.nombre;
+            sel.appendChild(opt);
+          });
+        });
+        if (cb) cb();
+      }).catch(function(err) { toast(err.message, true); });
+  }
+
+  function renderCanchasHorarios() {
+    var tbC = document.querySelector('#tablaCanchas tbody');
+    tbC.innerHTML = '';
+    state.canchas.forEach(function(c) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + c.canchaId + '</td><td>' + c.nombre + '</td><td>' + c.tipo + '</td>' +
+        '<td><input type="number" class="input-field small" style="width:100px" value="' + c.precio + '" data-precio="' + c.canchaId + '"></td>' +
+        '<td>' + toggleHtml('activa-cancha-' + c.canchaId, c.activa) + '</td>';
+      tbC.appendChild(tr);
+    });
+    tbC.querySelectorAll('[data-precio]').forEach(function(input) {
+      input.addEventListener('change', function() {
+        runAuth('actualizarCancha', function() { toast('Precio actualizado.'); }, function(err) { toast(err.message, true); },
+          input.dataset.precio, { precio: input.value });
+      });
+    });
+    tbC.querySelectorAll('[data-toggle^="activa-cancha-"]').forEach(function(chk) {
+      chk.addEventListener('change', function() {
+        var id = chk.dataset.toggle.replace('activa-cancha-', '');
+        runAuth('actualizarCancha', function() { toast('Cancha actualizada.'); }, function(err) { toast(err.message, true); chk.checked = !chk.checked; },
+          id, { activa: chk.checked });
+      });
+    });
+
+    var tbH = document.querySelector('#tablaHorarios tbody');
+    tbH.innerHTML = '';
+    state.horarios.forEach(function(h) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td>' + h.horarioId + '</td><td>' + h.horaInicio + '</td><td>' + h.horaFin + '</td>' +
+        '<td>' + toggleHtml('activo-horario-' + h.horarioId, h.activo) + '</td>';
+      tbH.appendChild(tr);
+    });
+    tbH.querySelectorAll('[data-toggle^="activo-horario-"]').forEach(function(chk) {
+      chk.addEventListener('change', function() {
+        var id = chk.dataset.toggle.replace('activo-horario-', '');
+        runAuth('actualizarHorario', function() { toast('Horario actualizado.'); }, function(err) { toast(err.message, true); chk.checked = !chk.checked; },
+          id, { activo: chk.checked });
+      });
+    });
+  }
+  function toggleHtml(id, checked) {
+    return '<label class="toggle"><input type="checkbox" data-toggle="' + id + '" ' + (checked ? 'checked' : '') + '><span class="toggle-slider"></span></label>';
+  }
+
+  /* ================= RESERVAS: sub-tabs ================= */
+  document.querySelectorAll('.reservas-subtab').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.reservas-subtab').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.reservas-sub').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById('sub-' + btn.dataset.subtab).classList.add('active');
+      if (btn.dataset.subtab === 'listado') cargarListadoReservas();
+      else cargarCalendarioDia();
+    });
+  });
+
+  /* ================= CALENDARIO DIARIO ================= */
+  document.getElementById('calendarioFecha').addEventListener('change', function() {
+    state.calFecha = this.value; cargarCalendarioDia();
+  });
+  document.getElementById('btnDiaAnterior').addEventListener('click', function() { cambiarDia(-1); });
+  document.getElementById('btnDiaSiguiente').addEventListener('click', function() { cambiarDia(1); });
+  document.getElementById('btnHoy').addEventListener('click', function() {
+    state.calFecha = toISODate(new Date());
+    document.getElementById('calendarioFecha').value = state.calFecha;
+    cargarCalendarioDia();
+  });
+
+  var MESES_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+  function actualizarEncabezadoMes_() {
+    var d = new Date(state.calFecha + 'T00:00:00');
+    document.getElementById('calMesAnio').textContent = MESES_ES[d.getMonth()].toUpperCase() + ' ' + d.getFullYear();
+  }
+
+  function cambiarDia(delta) {
+    var d = new Date(state.calFecha + 'T00:00:00');
+    d.setDate(d.getDate() + delta);
+    state.calFecha = toISODate(d);
+    document.getElementById('calendarioFecha').value = state.calFecha;
+    cargarCalendarioDia();
+  }
+
+  function cargarCalendarioDia(forzar) {
+    if (!document.getElementById('v-reservas').classList.contains('active')) return;
+    actualizarEncabezadoMes_();
+    runAuth('obtenerCalendarioDia', function(data) {
+      if (!data) { toast('No se pudo cargar el calendario. Volvé a intentar.', true); return; }
+      var grid = document.getElementById('calendarioGrid');
+      grid.innerHTML = '';
+      var canchas = data.canchas;
+      grid.style.gridTemplateColumns = '96px repeat(' + canchas.length + ', minmax(130px, 1fr))';
+
+      // Fila de encabezados: esquina vacía + nombre de cada cancha.
+      grid.appendChild(document.createElement('div'));
+      canchas.forEach(function(c) {
+        var h = document.createElement('div');
+        h.className = 'cal-col-header';
+        h.textContent = c.nombre;
+        grid.appendChild(h);
+      });
+
+      // Una fila por horario; dentro, una celda por cancha en ese horario.
+      var cantidadHorarios = canchas.length ? canchas[0].celdas.length : 0;
+      for (var i = 0; i < cantidadHorarios; i++) {
+        var label = document.createElement('div');
+        label.className = 'cal-row-label';
+        label.textContent = canchas[0].celdas[i].horaInicio + '-' + canchas[0].celdas[i].horaFin;
+        grid.appendChild(label);
+
+        canchas.forEach(function(fila) {
+          var celda = fila.celdas[i];
+          var cell = document.createElement('div');
+          cell.className = 'cal-cell' + (celda.reserva ? ' ocupada' : '') + (celda.filtradoOculto ? ' oculta' : '');
+          if (celda.reserva) {
+            var r = celda.reserva;
+            cell.innerHTML = '<div class="cal-cliente">' + r.clienteNombre + '</div>' +
+              '<div class="cal-pago"><span class="estado-badge estado-' + r.estado + '">' + r.estado + '</span></div>' +
+              '<div class="cal-pago">' + formatMoneda(r.pagado) + ' / ' + formatMoneda(r.precio) + '</div>';
+            cell.addEventListener('click', function() { abrirModalGestionReserva(r); });
+          } else {
+            cell.innerHTML = '<div class="muted" style="font-size:11px;">Disponible</div>';
+            cell.addEventListener('click', function() {
+              abrirModalNuevaReserva({ fecha: data.fecha, canchaId: fila.canchaId, horarioId: celda.horarioId });
+            });
+          }
+          grid.appendChild(cell);
+        });
+      }
+    }, function(err) { toast(err.message, true); }, state.calFecha, {}, forzar);
+  }
+
+  /* ================= RESERVAS: listado (rango de fechas) ================= */
+  function filtrosListado() {
+    return {
+      fechaDesde: document.getElementById('filtroFechaDesde').value || undefined,
+      fechaHasta: document.getElementById('filtroFechaHasta').value || undefined,
+      canchaId: document.getElementById('filtroCancha').value || undefined,
+      estado: document.getElementById('filtroEstado').value || undefined
+    };
+  }
+  function cargarListadoReservas(forzar) {
+    runAuth('listarReservas', function(lista) {
+      var tb = document.querySelector('#tablaReservas tbody');
+      tb.innerHTML = '';
+      lista.forEach(function(r) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + r.reservaId + '</td><td>' + r.fechaLegible + '</td><td>' + r.horaInicio + ' - ' + r.horaFin + '</td>' +
+          '<td>' + r.cancha + '</td><td>' + (r.clienteNombre || r.clienteId) + '</td>' +
+          '<td><span class="estado-badge estado-' + r.estado + '">' + r.estado + '</span></td>' +
+          '<td>' + formatMoneda(r.precio) + '</td><td>' + formatMoneda(r.pagado) + '</td><td>' + formatMoneda(r.saldo) + '</td><td></td>';
+        var btn = document.createElement('button');
+        btn.className = 'btn-icon'; btn.textContent = 'Gestionar';
+        btn.addEventListener('click', function() { abrirModalGestionReserva(r); });
+        tr.lastElementChild.appendChild(btn);
+        tb.appendChild(tr);
+      });
+    }, function(err) { toast(err.message, true); }, filtrosListado(), forzar);
+  }
+  ['filtroFechaDesde', 'filtroFechaHasta', 'filtroCancha', 'filtroEstado'].forEach(function(id) {
+    document.getElementById(id).addEventListener('change', cargarListadoReservas);
+  });
+  document.getElementById('btnLimpiarFiltros').addEventListener('click', function() {
+    ['filtroFechaDesde', 'filtroFechaHasta', 'filtroCancha', 'filtroEstado'].forEach(function(id) { document.getElementById(id).value = ''; });
+    cargarListadoReservas();
+  });
+
+  /* ---------------- Modal genérico ---------------- */
+  function abrirModal(html) {
+    document.getElementById('modalBox').innerHTML = html;
+    document.getElementById('modalOverlay').classList.remove('hidden');
+  }
+  function cerrarModal() { document.getElementById('modalOverlay').classList.add('hidden'); }
+  document.getElementById('modalOverlay').addEventListener('click', function(e) { if (e.target.id === 'modalOverlay') cerrarModal(); });
+
+  function campoModal(label, id, tipo, valor, opciones, full) {
+    var input;
+    if (tipo === 'select') input = '<select id="' + id + '" class="input-field">' + opciones + '</select>';
+    else input = '<input type="' + tipo + '" id="' + id + '" class="input-field" value="' + (valor === undefined || valor === null ? '' : valor) + '">';
+    return '<div class="' + (full ? 'full' : '') + '"><span class="field-label">' + label + '</span>' + input + '</div>';
+  }
+  function opcionesCanchas(seleccion) {
+    return state.canchas.map(function(c) { return '<option value="' + c.canchaId + '"' + (c.canchaId === seleccion ? ' selected' : '') + '>' + c.nombre + '</option>'; }).join('');
+  }
+  function opcionesHorarios(seleccion) {
+    return state.horarios.map(function(h) { return '<option value="' + h.horarioId + '"' + (h.horarioId === seleccion ? ' selected' : '') + '>' + h.horaInicio + ' - ' + h.horaFin + '</option>'; }).join('');
+  }
+  function opcionesEstado(seleccion) {
+    return ['PARCIAL', 'CONFIRMADA', 'CANCELADA'].map(function(e) {
+      return '<option value="' + e + '"' + (e === seleccion ? ' selected' : '') + '>' + e + '</option>';
+    }).join('');
+  }
+
+  /* ================= NUEVA RESERVA (con cliente existente o nuevo) ================= */
+  document.getElementById('btnNuevaReservaAdmin').addEventListener('click', function() { abrirModalNuevaReserva({}); });
+
+  function abrirModalNuevaReserva(prefill) {
+    var canchaSel = prefill.canchaId || '';
+    var horarioSel = prefill.horarioId || '';
+    var fechaVal = prefill.fecha || state.calFecha;
+
+    abrirModal(
+      '<h2>Nueva reserva</h2>' +
+      '<div class="form-field full" style="margin-bottom:12px;">' +
+        '<span class="field-label">Buscar cliente existente</span>' +
+        '<input type="text" id="buscarClienteRapido" class="input-field" placeholder="Nombre o email...">' +
+        '<div id="sugerenciasCliente" style="margin-top:6px;"></div>' +
+      '</div>' +
+      '<div class="form-grid2">' +
+        campoModal('Fecha', 'nFecha', 'date', fechaVal) +
+        campoModal('Cancha', 'nCancha', 'select', canchaSel, opcionesCanchas(canchaSel)) +
+        campoModal('Horario', 'nHorario', 'select', horarioSel, opcionesHorarios(horarioSel)) +
+        campoModal('Precio (opcional)', 'nPrecio', 'number', '') +
+        campoModal('Nombre', 'nNombre', 'text', '') +
+        campoModal('Apellido', 'nApellido', 'text', '') +
+        campoModal('WhatsApp', 'nWhatsapp', 'text', '') +
+        campoModal('Email', 'nEmail', 'text', '') +
+        campoModal('Pago inicial (opcional)', 'nPagoInicial', 'number', '0') +
+        '<div><span class="field-label">Medio de pago</span><select id="nMedioPago" class="input-field">' +
+          '<option value="EFECTIVO">Efectivo</option><option value="TRANSFERENCIA">Transferencia</option><option value="TARJETA">Tarjeta</option><option value="MERCADO_PAGO">Mercado Pago</option></select></div>' +
+        campoModal('Observaciones', 'nObs', 'text', '', null, true) +
+      '</div>' +
+      '<div id="nuevaError" class="form-error"></div>' +
+      '<div class="modal-actions"><button class="btn-secondary" id="mBtnCerrar">Cancelar</button><button class="btn-primary" id="mBtnCrear">Crear reserva</button></div>'
+    );
+
+    document.getElementById('buscarClienteRapido').addEventListener('input', function() {
+      var q = this.value.trim().toLowerCase();
+      var box = document.getElementById('sugerenciasCliente');
+      if (q.length < 2) { box.innerHTML = ''; return; }
+      runAuth('listarClientes', function(lista) {
+        box.innerHTML = lista.slice(0, 5).map(function(c) {
+          return '<div class="btn-icon" style="display:block;margin-bottom:4px;cursor:pointer;" data-cid="' + c.clienteId + '">' +
+            c.nombre + ' ' + c.apellido + ' — ' + c.email + '</div>';
+        }).join('') || '<span class="muted">Sin coincidencias, se creará un cliente nuevo.</span>';
+        box.querySelectorAll('[data-cid]').forEach(function(el) {
+          el.addEventListener('click', function() {
+            var c = lista.filter(function(x) { return x.clienteId === el.dataset.cid; })[0];
+            document.getElementById('nNombre').value = c.nombre;
+            document.getElementById('nApellido').value = c.apellido;
+            document.getElementById('nWhatsapp').value = c.whatsapp;
+            document.getElementById('nEmail').value = c.email;
+            box.innerHTML = '';
+          });
+        });
+      }, function() {}, q);
+    });
+
+    document.getElementById('mBtnCerrar').addEventListener('click', cerrarModal);
+    document.getElementById('mBtnCrear').addEventListener('click', function() {
+      var data = {
+        fecha: document.getElementById('nFecha').value,
+        canchaId: document.getElementById('nCancha').value,
+        horarioId: document.getElementById('nHorario').value,
+        precio: document.getElementById('nPrecio').value,
+        nombre: document.getElementById('nNombre').value.trim(),
+        apellido: document.getElementById('nApellido').value.trim(),
+        whatsapp: document.getElementById('nWhatsapp').value.trim(),
+        email: document.getElementById('nEmail').value.trim(),
+        observaciones: document.getElementById('nObs').value.trim(),
+        pagoInicial: document.getElementById('nPagoInicial').value || 0,
+        medioPago: document.getElementById('nMedioPago').value
+      };
+      runAuth('crearReservaAdmin', function() {
+        toast('Reserva creada.'); cerrarModal(); cargarCalendarioDia(); cargarDashboard(state.periodoActual);
+      }, function(err) { document.getElementById('nuevaError').textContent = err.message; }, data);
+    });
+  }
+
+  /* ================= GESTIONAR RESERVA ================= */
+  function abrirModalGestionReserva(r) {
+    var esFinal = r.estado === 'CANCELADA';
+
+    abrirModal(
+      '<h2>Reserva ' + r.reservaId + '</h2>' +
+      '<p class="muted">' + (r.clienteNombre || '') + (r.clienteWhatsapp ? ' · ' + r.clienteWhatsapp : '') + (r.clienteEmail ? ' · ' + r.clienteEmail : '') + '</p>' +
+      '<div class="form-grid2">' +
+        campoModal('Fecha', 'mFecha', 'date', r.fecha) +
+        campoModal('Cancha', 'mCancha', 'select', r.canchaId, opcionesCanchas(r.canchaId)) +
+        campoModal('Horario', 'mHorario', 'select', r.horarioId, opcionesHorarios(r.horarioId)) +
+        campoModal('Estado', 'mEstado', 'select', r.estado, opcionesEstado(r.estado)) +
+        campoModal('Precio', 'mPrecio', 'number', r.precio) +
+        campoModal('Observaciones', 'mObs', 'text', r.observaciones, null, true) +
+      '</div>' +
+      '<div class="card" style="margin-top:14px;">' +
+        '<div class="config-row"><label>Pagado</label><b>' + formatMoneda(r.pagado) + '</b></div>' +
+        '<div class="config-row"><label>Saldo pendiente</label><b>' + formatMoneda(r.saldo) + '</b></div>' +
+      '</div>' +
+      (r.saldo > 0 && !esFinal ? '<button class="btn-primary" id="mBtnCobrarSaldo" style="margin-top:12px;width:100%;">💰 Cobrar saldo ' + formatMoneda(r.saldo) + '</button>' : '') +
+      (r.saldo > 0 && !esFinal ? formularioPago(r.reservaId, r.saldo) : '') +
+      '<div id="historialPagosBox" style="margin-top:14px;"></div>' +
+      '<div class="modal-actions" style="flex-wrap:wrap;">' +
+        (!esFinal ? '<button class="btn-icon danger" id="mBtnCancelar">Cancelar reserva</button>' : '') +
+        '<button class="btn-secondary" id="mBtnCerrar">Cerrar</button>' +
+        (!esFinal ? '<button class="btn-primary" id="mBtnGuardar">Guardar cambios</button>' : '') +
+      '</div>'
+    );
+
+    document.getElementById('mBtnCerrar').addEventListener('click', cerrarModal);
+    cargarHistorialPagos(r.reservaId);
+
+    if (esFinal) return;
+
+    document.getElementById('mBtnGuardar').addEventListener('click', function() {
+      var cambios = {
+        fecha: document.getElementById('mFecha').value,
+        canchaId: document.getElementById('mCancha').value,
+        horarioId: document.getElementById('mHorario').value,
+        estado: document.getElementById('mEstado').value,
+        precio: document.getElementById('mPrecio').value,
+        observaciones: document.getElementById('mObs').value
+      };
+      runAuth('editarReserva', function() {
+        toast('Reserva actualizada.'); cerrarModal(); cargarCalendarioDia(); cargarListadoReservas(); cargarDashboard(state.periodoActual);
+      }, function(err) { toast(err.message, true); }, r.reservaId, cambios);
+    });
+    document.getElementById('mBtnCancelar').addEventListener('click', function() {
+      if (!confirm('¿Cancelar esta reserva?')) return;
+      runAuth('cancelarReservaAdmin', function() {
+        toast('Reserva cancelada.'); cerrarModal(); cargarCalendarioDia(); cargarListadoReservas(); cargarDashboard(state.periodoActual);
+      }, function(err) { toast(err.message, true); }, r.reservaId, '');
+    });
+
+    var btnCobrar = document.getElementById('mBtnCobrarSaldo');
+    if (btnCobrar) {
+      btnCobrar.addEventListener('click', function() {
+        document.getElementById('pagoMonto').value = r.saldo;
+        document.getElementById('pagoTipo').value = 'SALDO';
+      });
+    }
+    var btnPago = document.getElementById('mBtnRegistrarPago');
+    if (btnPago) {
+      btnPago.addEventListener('click', function() {
+        var monto = document.getElementById('pagoMonto').value;
+        var tipo = document.getElementById('pagoTipo').value;
+        var medioPago = document.getElementById('pagoMedio').value;
+        runAuth('registrarPago', function() {
+          toast('Pago registrado.'); cerrarModal(); cargarCalendarioDia(); cargarListadoReservas(); cargarDashboard(state.periodoActual);
+        }, function(err) { toast(err.message, true); }, { reservaId: r.reservaId, monto: monto, tipo: tipo, medioPago: medioPago });
+      });
+    }
+  }
+
+  function formularioPago(reservaId, saldoSugerido) {
+    return '<div class="card" style="margin-top:14px;">' +
+      '<h3 style="margin-top:0;">Registrar pago</h3>' +
+      '<div class="form-grid2">' +
+        '<div><span class="field-label">Monto</span><input type="number" id="pagoMonto" class="input-field" value="' + saldoSugerido + '"></div>' +
+        '<div><span class="field-label">Tipo</span><select id="pagoTipo" class="input-field">' +
+          '<option value="SEÑA">Seña</option><option value="SALDO" selected>Saldo</option><option value="TOTAL">Total</option></select></div>' +
+        '<div class="full"><span class="field-label">Medio de pago</span><select id="pagoMedio" class="input-field">' +
+          '<option>EFECTIVO</option><option>TARJETA</option><option>MERCADO_PAGO</option><option>TRANSFERENCIA</option></select></div>' +
+      '</div>' +
+      '<button class="btn-primary" id="mBtnRegistrarPago" style="margin-top:12px;">Registrar pago</button>' +
+      '</div>';
+  }
+
+  function cargarHistorialPagos(reservaId) {
+    runAuth('listarPagosPorReserva', function(pagos) {
+      var box = document.getElementById('historialPagosBox');
+      if (!pagos.length) { box.innerHTML = '<p class="muted">Sin pagos registrados todavía.</p>'; return; }
+      box.innerHTML = '<h3 style="font-size:13px;color:var(--text-muted);margin-bottom:8px;">Historial de pagos</h3>' +
+        '<div class="table-wrap"><table class="data-table"><thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Medio</th></tr></thead><tbody>' +
+        pagos.map(function(p) {
+          return '<tr><td>' + formatFechaCorta(p.Fecha) + '</td><td>' + p.Tipo + '</td><td>' + formatMoneda(p.Monto) + '</td><td>' + p.Medio_Pago + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }, function() {}, reservaId);
+  }
+  function formatFechaCorta(f) {
+    var d = new Date(f);
+    return d.toLocaleDateString('es-AR') + ' ' + d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  }
+
+  /* ================= CLIENTES ================= */
+  function cargarClientes(filtro, forzar) {
+    runAuth('listarClientes', function(lista) {
+      var tb = document.querySelector('#tablaClientes tbody');
+      tb.innerHTML = '';
+      lista.forEach(function(c) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + c.clienteId + '</td><td>' + c.nombre + ' ' + c.apellido + '</td><td>' + c.whatsapp + '</td>' +
+          '<td>' + c.email + '</td><td>' + c.fechaAlta + '</td>' +
+          '<td>' + toggleHtml('activo-cliente-' + c.clienteId, c.activo) + '</td><td></td>';
+        var btn = document.createElement('button');
+        btn.className = 'btn-icon'; btn.textContent = 'Historial';
+        btn.addEventListener('click', function() { abrirHistorialCliente(c); });
+        tr.lastElementChild.appendChild(btn);
+        tb.appendChild(tr);
+      });
+      tb.querySelectorAll('[data-toggle^="activo-cliente-"]').forEach(function(chk) {
+        chk.addEventListener('change', function() {
+          var id = chk.dataset.toggle.replace('activo-cliente-', '');
+          runAuth('actualizarCliente', function() { toast('Cliente actualizado.'); }, function(err) { toast(err.message, true); chk.checked = !chk.checked; },
+            id, { activo: chk.checked });
+        });
+      });
+    }, function(err) { toast(err.message, true); }, filtro, forzar);
+  }
+  document.getElementById('buscarCliente').addEventListener('input', function(e) {
+    clearTimeout(window._buscarTimer);
+    var valor = e.target.value;
+    window._buscarTimer = setTimeout(function() { cargarClientes(valor); }, 300);
+  });
+
+  function abrirHistorialCliente(c) {
+    runAuth('historialCliente', function(res) {
+      var s = res.stats;
+      var filas = res.reservas.map(function(r) {
+        return '<tr><td>' + r.reservaId + '</td><td>' + r.fechaLegible + '</td><td>' + r.cancha + '</td>' +
+          '<td><span class="estado-badge estado-' + r.estado + '">' + r.estado + '</span></td><td>' + formatMoneda(r.precio) + '</td></tr>';
+      }).join('') || '<tr><td colspan="5" class="muted">Sin reservas registradas.</td></tr>';
+
+      abrirModal(
+        '<h2>' + c.nombre + ' ' + c.apellido + '</h2>' +
+        '<p class="muted">' + c.email + ' · ' + c.whatsapp + '</p>' +
+        '<div class="kpi-grid" style="margin-bottom:16px;">' +
+          kpi('Total reservas', s.totalReservas) + kpi('Finalizadas', s.finalizadas) +
+          kpi('Canceladas', s.canceladas) + kpi('Próximas', s.proximas) +
+          kpi('Última reserva', s.ultimaReserva || '—') + kpi('Cancha favorita', s.canchaMasUsada || '—') +
+          kpi('Horario habitual', s.horarioHabitual || '—') +
+          kpi('Mañana / Tarde / Noche', s.reservasMañana + ' / ' + s.reservasTarde + ' / ' + s.reservasNoche) +
+        '</div>' +
+        '<div class="table-wrap"><table class="data-table"><thead><tr><th>ID</th><th>Fecha</th><th>Cancha</th><th>Estado</th><th>Precio</th></tr></thead><tbody>' + filas + '</tbody></table></div>' +
+        '<div class="modal-actions"><button class="btn-secondary" id="mBtnCerrar">Cerrar</button></div>'
+      );
+      document.getElementById('mBtnCerrar').addEventListener('click', cerrarModal);
+    }, function(err) { toast(err.message, true); }, c.clienteId);
+  }
+
+  /* ================= CONFIGURACIÓN ================= */
+  var etiquetasConfig = {
+    Nombre_Club: 'Nombre del club', Hora_Apertura: 'Hora de apertura', Hora_Cierre: 'Hora de cierre',
+    Duracion_Reserva_Minutos: 'Duración de turno (min)', Anticipacion_Max_Dias: 'Anticipación máxima (días)',
+    Anticipacion_Min_Horas: 'Mínimo de horas para reservar/cancelar', 'Seña_Obligatoria': 'Seña obligatoria (sin uso, ver notas)',
+    'Porcentaje_Seña': 'Porcentaje de seña (%)', Moneda: 'Moneda', Recordatorio_Email_Horas: 'Recordatorio (horas antes)',
+    Email_Club: 'Email del club', Email_Remite: 'Nombre remitente de emails'
+  };
+  function cargarConfiguracion() {
+    gsCall('getConfig').then(function(config) {
+      var html = '';
+      Object.keys(etiquetasConfig).forEach(function(key) {
+        if (config[key] === undefined) return;
+        html += '<div class="config-row"><label>' + etiquetasConfig[key] + '</label>' +
+          '<input type="text" class="input-field small" data-config="' + key + '" value="' + config[key] + '"></div>';
+      });
+      document.getElementById('configForm').innerHTML = html;
+    }).catch(function(err) { toast(err.message, true); });
+  }
+  document.getElementById('btnGuardarConfig').addEventListener('click', function() {
+    var cambios = {};
+    document.querySelectorAll('[data-config]').forEach(function(input) { cambios[input.dataset.config] = input.value; });
+    runAuth('actualizarConfig', function() { toast('Configuración guardada.'); }, function(err) { toast(err.message, true); }, cambios);
+  });
+
+  /* ================= USUARIOS ================= */
+  function cargarUsuarios() {
+    runAuth('listarUsuarios', function(lista) {
+      var tb = document.querySelector('#tablaUsuarios tbody');
+      tb.innerHTML = '';
+      lista.forEach(function(u) {
+        var tr = document.createElement('tr');
+        tr.innerHTML = '<td>' + u.Usuario_ID + '</td><td>' + u.Nombre + '</td><td>' + u.Email + '</td><td>' + u.Rol + '</td>' +
+          '<td>' + toggleHtml('activo-usuario-' + u.Usuario_ID, String(u.Activo).toUpperCase() === 'SI') + '</td>';
+        tb.appendChild(tr);
+      });
+      tb.querySelectorAll('[data-toggle^="activo-usuario-"]').forEach(function(chk) {
+        chk.addEventListener('change', function() {
+          var id = chk.dataset.toggle.replace('activo-usuario-', '');
+          runAuth('actualizarUsuario', function() { toast('Usuario actualizado.'); }, function(err) { toast(err.message, true); chk.checked = !chk.checked; },
+            id, { activo: chk.checked });
+        });
+      });
+    }, function(err) { toast(err.message, true); });
+  }
+  document.getElementById('btnNuevoUsuario').addEventListener('click', function() {
+    abrirModal(
+      '<h2>Nuevo usuario</h2>' +
+      '<div class="form-grid2">' +
+        campoModal('Nombre', 'uNombre', 'text', '') +
+        campoModal('Email', 'uEmail', 'text', '') +
+        '<div class="full"><span class="field-label">Rol</span><select id="uRol" class="input-field"><option value="RECEPCION">Recepción</option><option value="ADMIN">Administrador</option></select></div>' +
+      '</div>' +
+      '<div id="usuarioError" class="form-error"></div>' +
+      '<div class="modal-actions"><button class="btn-secondary" id="mBtnCerrar">Cancelar</button><button class="btn-primary" id="mBtnCrearUsuario">Crear</button></div>'
+    );
+    document.getElementById('mBtnCerrar').addEventListener('click', cerrarModal);
+    document.getElementById('mBtnCrearUsuario').addEventListener('click', function() {
+      var data = {
+        nombre: document.getElementById('uNombre').value.trim(),
+        email: document.getElementById('uEmail').value.trim(),
+        rol: document.getElementById('uRol').value
+      };
+      runAuth('crearUsuario', function() { toast('Usuario creado.'); cerrarModal(); cargarUsuarios(); },
+        function(err) { document.getElementById('usuarioError').textContent = err.message; }, data);
+    });
+  });
+
+  /* ================= BOTONES "Actualizar" (traen datos frescos, sin cache) ================= */
+  function conBotonGirando_(btn, fn) {
+    btn.classList.add('girando');
+    btn.disabled = true;
+    fn();
+    setTimeout(function() { btn.classList.remove('girando'); btn.disabled = false; }, 900);
+  }
+  document.getElementById('btnActualizarDashboard').addEventListener('click', function() {
+    var btn = this;
+    conBotonGirando_(btn, function() { return cargarDashboard(state.periodoActual, true); });
+  });
+  document.getElementById('btnActualizarReservas').addEventListener('click', function() {
+    var btn = this;
+    conBotonGirando_(btn, function() {
+      return document.getElementById('sub-listado').classList.contains('active')
+        ? cargarListadoReservas(true) : cargarCalendarioDia(true);
+    });
+  });
+  document.getElementById('btnActualizarClientes').addEventListener('click', function() {
+    var btn = this;
+    conBotonGirando_(btn, function() { return cargarClientes(document.getElementById('buscarCliente').value.trim(), true); });
+  });
+
+})();
+</script>
+
+</body>
+</html>
