@@ -602,17 +602,20 @@
   /* ================= Notificaciones push (OneSignal) =================
    * Pegá acá el App ID de OneSignal (Settings > Keys & IDs). No es secreto,
    * a diferencia de la REST API Key, que va del lado de Apps Script. */
-  var ONESIGNAL_APP_ID = '5afb5c89-d25a-44c8-a3a9-298e4f9cdaaf';
+   var ONESIGNAL_APP_ID = '5afb5c89-d25a-44c8-a3a9-298e4f9cdaaf';
 
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(function(OneSignal) {
     OneSignal.init({ appId: ONESIGNAL_APP_ID }).then(function() {
       OneSignal.User.PushSubscription.addEventListener('change', function(evento) {
         if (evento.current && evento.current.id) {
-          toast('ID de notificaciones: ' + evento.current.id + ' (copialo a Apps Script)');
+          toast('ID de notificaciones: ' + evento.current.id + ' (copialo en el secreto ONESIGNAL_ADMIN_SUBSCRIPTION_ID de Supabase)');
           console.log('OneSignal Subscription ID:', evento.current.id);
         }
       });
+    }).catch(function(e) {
+      console.error('OneSignal init falló:', e);
+      window.__onesignalError = (e && e.message) || String(e);
     });
   });
 
@@ -622,8 +625,13 @@
       return;
     }
     OneSignalDeferred.push(function(OneSignal) {
+      if (window.__onesignalError) { toast('OneSignal no pudo iniciar: ' + window.__onesignalError, true); return; }
       if (OneSignal.User.PushSubscription.id) {
         toast('Ya está activado. ID: ' + OneSignal.User.PushSubscription.id);
+        return;
+      }
+      if (window.Notification && Notification.permission === 'denied') {
+        toast('Las notificaciones están bloqueadas en este navegador. Habilitalas desde el candado de la URL.', true);
         return;
       }
       OneSignal.Notifications.requestPermission();
